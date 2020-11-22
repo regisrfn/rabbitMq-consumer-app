@@ -26,6 +26,26 @@ public class RabbitMQConfig {
     private String routingkey;
 
     @Bean
+    public ConnectionFactory connectionFactory() {
+        URI rabbitMq;
+        String rabbitMqUrl = getEnv("CLOUDAMQP_URL");
+        if (rabbitMqUrl == null) {
+            rabbitMq = URI.create("amqp://guest:guest@localhost:5672");
+        } else {
+            rabbitMq = URI.create(rabbitMqUrl);
+        }
+
+        final CachingConnectionFactory factory = new CachingConnectionFactory(rabbitMq.getHost());
+        factory.setUsername(rabbitMq.getUserInfo().split(":")[0]);
+        factory.setPassword(rabbitMq.getUserInfo().split(":")[1]);
+        factory.setPort(rabbitMq.getPort());
+        if (!rabbitMq.getPath().isEmpty()) {
+            factory.setVirtualHost(rabbitMq.getPath().substring(1));
+        }
+        return factory;
+    }
+
+    @Bean
     Queue queue() {
         return new Queue(queueName);
     }
@@ -43,26 +63,6 @@ public class RabbitMQConfig {
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
-    }
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        URI rabbitMq;
-        String rabbitMqUrl = getEnv("CLOUDAMQP_URL");
-        if (rabbitMqUrl == null) {
-            rabbitMq = URI.create("amqp://guest:guest@localhost:5672");
-        } else {
-            rabbitMq = URI.create(rabbitMqUrl);
-        }
-
-        final CachingConnectionFactory factory = new CachingConnectionFactory(rabbitMq.getHost());
-        factory.setUsername(rabbitMq.getUserInfo().split(":")[0]);
-        factory.setPassword(rabbitMq.getUserInfo().split(":")[1]);
-        factory.setPort(rabbitMq.getPort());
-        if(!rabbitMq.getPath().isEmpty()){
-            factory.setVirtualHost(rabbitMq.getPath().substring(1));
-        }        
-        return factory;
     }
 
     @Bean
