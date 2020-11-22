@@ -1,10 +1,13 @@
 package com.rufino.server.config;
 
+import java.net.URI;
+
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -43,9 +46,37 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public AmqpTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-        final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+    public ConnectionFactory connectionFactory() {
+        URI rabbitMq;
+        String rabbitMqUrl = getEnv("CLOUDAMQP_URL");
+        if (rabbitMqUrl == null) {
+            rabbitMq = URI.create("amqp://guest:guest@localhost:5672");
+        } else {
+            rabbitMq = URI.create(rabbitMqUrl);
+        }
+
+        final CachingConnectionFactory factory = new CachingConnectionFactory(rabbitMq.getHost());
+        factory.setUsername(rabbitMq.getUserInfo().split(":")[0]);
+        factory.setPassword(rabbitMq.getUserInfo().split(":")[1]);
+        factory.setPort(rabbitMq.getPort());
+        if(!rabbitMq.getPath().isEmpty()){
+            factory.setVirtualHost(rabbitMq.getPath().substring(1));
+        }        
+        return factory;
+    }
+
+    @Bean
+    public AmqpTemplate rabbitTemplate() {
+        final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
+    }
+
+    private static String getEnv(String name) {
+        final String env = System.getenv(name);
+        if (env == null) {
+            System.out.println("Environment variable [" + name + "] is not set.");
+        }
+        return env;
     }
 }
