@@ -19,7 +19,7 @@ public class RabbitMqController {
     }
 
     @RabbitListener(queues = "${sample.rabbitmq.queue}")
-    public void recievedMessage(String incomingMessage) {
+    public void receivedMessage(String incomingMessage) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             DeliveryOrder deliveryOrder = objectMapper.readValue(incomingMessage, DeliveryOrder.class);
@@ -32,7 +32,7 @@ public class RabbitMqController {
             e.printStackTrace();
         }
         // deliveryOrderService.addDelivery(incomingMessage);
-        System.out.println("Recieved Message From RabbitMQ: " + incomingMessage);
+        System.out.println("Received Message From RabbitMQ: " + incomingMessage);
 
     }
 }
