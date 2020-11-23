@@ -1,11 +1,17 @@
 package com.rufino.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import com.rufino.server.api.RabbitMqController;
+import com.rufino.server.databaseConn.DatabaseConnection;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +32,9 @@ class ServerApplicationTests {
 	@Autowired
 	private RabbitMqController rabbitMqController;
 
-	// INTEGRATION
+	private static Connection conn;
+
+	// INTEGRATION - send message to real server
 	@Test
 	public void sendMessage() {
 		String message = "{ \"idClient\":111111,\"orderAddress\": \"rua de baixo\" }";
@@ -34,6 +42,21 @@ class ServerApplicationTests {
 		System.out.println("Send msg to consumer= " + message + " ");
 	}
 
+	@BeforeAll
+	public static void openConnection() throws SQLException {
+		conn = DatabaseConnection.getInstance().getConnection();
+		assertNotNull(conn);
+	}
+
+	@AfterAll
+	public static void closeConnection() throws SQLException {
+		assertNotNull(conn);
+		conn.close();
+		assertEquals(true, conn.isClosed());
+	}
+
+	//////////////////////////////////////////////////////////////////////////////
+	// UNIT TEST
 	@Test
 	void contextLoads() {
 		rabbitMqController.receivedMessage("{ \"idClient\":456,\"orderAddress\": \"rua de baixo\" }");
