@@ -3,8 +3,8 @@ package com.rufino.server.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rufino.server.model.DeliveryOrder;
-import com.rufino.server.services.DeliveryOrderService;
+import com.rufino.server.model.Delivery;
+import com.rufino.server.services.DeliveryService;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -12,18 +12,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class RabbitMqController {
 
-    private DeliveryOrderService deliveryOrderService;
+    private DeliveryService deliveryService;
 
-    public RabbitMqController(DeliveryOrderService deliveryOrderService) {
-        this.deliveryOrderService = deliveryOrderService;
+    public RabbitMqController(DeliveryService deliveryService) {
+        this.deliveryService = deliveryService;
     }
 
     @RabbitListener(queues = "${sample.rabbitmq.queue}")
     public void receivedMessage(String incomingMessage) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            DeliveryOrder deliveryOrder = objectMapper.readValue(incomingMessage, DeliveryOrder.class);
-            deliveryOrderService.addDelivery(deliveryOrder);
+            Delivery delivery = objectMapper.readValue(incomingMessage, Delivery.class);
+            deliveryService.addDelivery(delivery);
         } catch (JsonMappingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -31,7 +31,7 @@ public class RabbitMqController {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        // deliveryOrderService.addDelivery(incomingMessage);
+        // deliveryService.addDelivery(incomingMessage);
         System.out.println("Received Message From RabbitMQ: " + incomingMessage);
 
     }

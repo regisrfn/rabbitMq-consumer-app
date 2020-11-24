@@ -2,7 +2,10 @@ package com.rufino.server.model;
 
 import java.util.UUID;
 
-public class DeliveryOrder {
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"idDelivery", "idClient", "orderAddress" })
+public class Delivery {
 
     private UUID idDelivery;
     private String idClient;
