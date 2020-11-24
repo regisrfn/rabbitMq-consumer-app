@@ -6,8 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rufino.server.api.RabbitMqController;
 import com.rufino.server.databaseConn.DatabaseConnection;
 import com.rufino.server.model.Delivery;
@@ -15,13 +18,19 @@ import com.rufino.server.services.DeliveryService;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,16 +48,10 @@ class ServerApplicationTests {
 	private DeliveryService deliveryService;
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+	@Autowired
+	private MockMvc mockMvc;
 
 	private static Connection conn;
-
-	// INTEGRATION - send message to real server - test connection do database
-	@Test
-	public void sendMessage() {
-		String message = "{ \"idClient\":111111,\"orderAddress\": \"rua de baixo\" }";
-		rabbitTemplate.convertAndSend(exchange, routingkey, message);
-		System.out.println("Send msg to consumer= " + message + " ");
-	}
 
 	@BeforeAll
 	public static void openConnection() throws SQLException {
@@ -63,11 +66,24 @@ class ServerApplicationTests {
 		assertEquals(true, conn.isClosed());
 	}
 
+	@BeforeEach
+	void clearTable() {
+		jdbcTemplate.update("DELETE FROM Delivery");
+	}
+
+	// INTEGRATION - send message to real server - test connection do database
+	@Test
+	public void sendMessage() {
+		String message = "{ \"idClient\":111111,\"orderAddress\": \"rua de baixo\" }";
+		rabbitTemplate.convertAndSend(exchange, routingkey, message);
+		System.out.println("Send msg to consumer= " + message + " ");
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 	// UNIT TEST
-	//////////////////////RABBITMQ TEST
+	////////////////////// RABBITMQ TEST
 	@Test
-	void contextLoads() {
+	void rabbitMqReceivedMessage() {
 		rabbitMqController.receivedMessage("{ \"idClient\":456,\"orderAddress\": \"rua de baixo\" }");
 	}
 
@@ -87,7 +103,7 @@ class ServerApplicationTests {
 			rabbitMq = URI.create(rabbitMqUrl);
 		}
 	}
-	
+
 	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\TEST SELECT ALL
 	@Test
 	public void selectAllDeliveryDAO() {
@@ -97,6 +113,37 @@ class ServerApplicationTests {
 		assertEquals(delivery.getIdDelivery(), Db.get(0).getIdDelivery());
 		assertEquals(delivery.getIdClient(), Db.get(0).getIdClient());
 		assertEquals(delivery.getOrderAddress(), Db.get(0).getOrderAddress());
+	}
+
+	@Test
+	void selectAllDeliveryHttp() throws Exception {
+		Delivery delivery = new Delivery();
+		createAndAssert(delivery);
+		MvcResult result = mockMvc.perform(get("/api/v1/delivery").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk()).andReturn();
+
+		String contentString = result.getResponse().getContentAsString();
+		ObjectMapper om = new ObjectMapper();
+		List<Delivery> deliveryList = Arrays.asList(om.readValue(contentString, Delivery[].class));
+		List<Delivery> Db = deliveryService.getAll();
+		assertEquals(deliveryList.get(0).getIdDelivery(), Db.get(0).getIdDelivery());
+		assertEquals(deliveryList.get(0).getIdClient(), Db.get(0).getIdClient());
+		assertEquals(deliveryList.get(0).getOrderAddress(), Db.get(0).getOrderAddress());
+
+	}
+
+	@Test
+	void selectAllDeliveryHttp_Empty() throws Exception {
+		long countBeforeInsert = jdbcTemplate.queryForObject("select count(*) from delivery", Long.class);
+		assertEquals(0, countBeforeInsert);
+		MvcResult result = mockMvc.perform(get("/api/v1/delivery").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk()).andReturn();
+
+		String contentString = result.getResponse().getContentAsString();
+		ObjectMapper om = new ObjectMapper();
+		List<Delivery> deliveryList = Arrays.asList(om.readValue(contentString, Delivery[].class));
+		assertEquals(new ArrayList<>(), deliveryList);
+
 	}
 
 	private String getEnv(String name) {
