@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Delivery (
 	id_delivery VARCHAR NOT NULL PRIMARY KEY,
-	id_client VARCHAR NOT NULL,
+	id_order VARCHAR NOT NULL,
 	order_address VARCHAR NOT NULL
 );

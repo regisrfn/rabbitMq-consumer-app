@@ -17,8 +17,8 @@ H2 in-memory
 
 |       Delivery     |
 |--------------------|
-|idOrder: UIID       |
-|idClient: String    |
+|idOrder: UUID       |
+|idClient: UUID      |
 |orderAddress: String|
 
 

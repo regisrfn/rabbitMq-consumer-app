@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rufino.server.api.RabbitMqController;
@@ -84,7 +85,7 @@ class ServerApplicationTests {
 	////////////////////// RABBITMQ TEST
 	@Test
 	void rabbitMqReceivedMessage() {
-		rabbitMqController.receivedMessage("{ \"idClient\":456,\"orderAddress\": \"rua de baixo\" }");
+		rabbitMqController.receivedMessage("{ \"idOrder\":456,\"orderAddress\": \"rua de baixo\" }");
 	}
 
 	@Test
@@ -111,7 +112,7 @@ class ServerApplicationTests {
 		createAndAssert(delivery);
 		List<Delivery> Db = deliveryService.getAll();
 		assertEquals(delivery.getIdDelivery(), Db.get(0).getIdDelivery());
-		assertEquals(delivery.getIdClient(), Db.get(0).getIdClient());
+		assertEquals(delivery.getIdOrder(), Db.get(0).getIdOrder());
 		assertEquals(delivery.getOrderAddress(), Db.get(0).getOrderAddress());
 	}
 
@@ -127,7 +128,7 @@ class ServerApplicationTests {
 		List<Delivery> deliveryList = Arrays.asList(om.readValue(contentString, Delivery[].class));
 		List<Delivery> Db = deliveryService.getAll();
 		assertEquals(deliveryList.get(0).getIdDelivery(), Db.get(0).getIdDelivery());
-		assertEquals(deliveryList.get(0).getIdClient(), Db.get(0).getIdClient());
+		assertEquals(deliveryList.get(0).getIdOrder(), Db.get(0).getIdOrder());
 		assertEquals(deliveryList.get(0).getOrderAddress(), Db.get(0).getOrderAddress());
 
 	}
@@ -156,7 +157,8 @@ class ServerApplicationTests {
 
 	// -----------------------------------------------------
 	private void createAndAssert(Delivery delivery) {
-		delivery.setIdClient("abc123");
+		UUID id = UUID.randomUUID();
+		delivery.setIdOrder(id);
 		delivery.setOrderAddress("Rua de cima");
 		long countBeforeInsert = jdbcTemplate.queryForObject("select count(*) from delivery", Long.class);
 		assertEquals(0, countBeforeInsert);

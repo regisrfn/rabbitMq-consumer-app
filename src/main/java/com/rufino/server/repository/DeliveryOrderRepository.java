@@ -28,8 +28,8 @@ public class DeliveryOrderRepository implements DeliveryDao {
     public int insert(UUID id, Delivery deliveryOrder) {
         try {
             int result = jdbcTemplate.update(
-                    "INSERT INTO delivery " + "(id_delivery, id_client, order_address)" + "VALUES (?, ?, ?)", id,
-                    deliveryOrder.getIdClient(), deliveryOrder.getOrderAddress());
+                    "INSERT INTO delivery " + "(id_delivery, id_order, order_address)" + "VALUES (?, ?, ?)", id,
+                    deliveryOrder.getIdOrder(), deliveryOrder.getOrderAddress());
             deliveryOrder.setIdDelivery((result > 0 ? id : null));
             return result;
 

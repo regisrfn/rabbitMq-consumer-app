@@ -4,15 +4,23 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({"idDelivery", "idClient", "orderAddress" })
+@JsonPropertyOrder({ "idDelivery", "idOrder","orderAddress" })
 public class Delivery {
 
     private UUID idDelivery;
-    private String idClient;
+    private UUID idOrder;
     private String orderAddress;
 
     public UUID getIdDelivery() {
         return idDelivery;
+    }
+
+    public UUID getIdOrder() {
+        return idOrder;
+    }
+
+    public void setIdOrder(UUID idOrder) {
+        this.idOrder = idOrder;
     }
 
     public void setIdDelivery(UUID idDelivery) {
@@ -26,13 +34,5 @@ public class Delivery {
     public void setOrderAddress(String orderAddress) {
         this.orderAddress = orderAddress;
     }
-
-    public String getIdClient() {
-        return idClient;
-    }
-
-    public void setIdClient(String idClient) {
-        this.idClient = idClient;
-    }   
     
 }
