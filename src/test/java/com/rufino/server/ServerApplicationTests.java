@@ -75,7 +75,7 @@ class ServerApplicationTests {
 	// INTEGRATION - send message to real server - test connection do database
 	@Test
 	public void sendMessage() {
-		String message = "{ \"idClient\":111111,\"orderAddress\": \"rua de baixo\" }";
+		String message = "{ \"idOrder\":3ccda4cf-7fb4-4888-b0fe-d20423798f4d,\"orderAddress\": \"rua de baixo\" }";
 		rabbitTemplate.convertAndSend(exchange, routingkey, message);
 		System.out.println("Send msg to consumer= " + message + " ");
 	}
