@@ -28,7 +28,7 @@ H2 in-memory
  - RabbitMq add on installed on heroku app ->  heroku addons:create cloudamqp:lemur -> (https://elements.heroku.com/addons/cloudamqp)
  
  - Can be tested on:
-  https://rufino-rabbitmq-consumer.herokuapp.com/api/v1/order/
+  https://rufino-rabbitmq-consumer.herokuapp.com/api/v1/delivery/
 
 # The producer app:
   Github:https://github.com/regisrfn/SpringBootApp
