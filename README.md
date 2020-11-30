@@ -3,13 +3,24 @@ App test using: java 14 (Spring Boot), H2 (in-memory database) and RabbiMq.
 Running in Ubuntu Focal 20.04 (LTS)
 
 Running locally:
-http://localhost:<port>/api/v1/delivery
+http://localhost:port/api/v1/delivery
 
 # PREREQUISITES
 - Java
 - Docker | https://docs.docker.com/engine/install/ubuntu/ 
 
-# Running RabbitMq in linux
+
+# Docker
+## Running RabbitMq
+- create and run:
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+- stop 
+docker stop rabbitmq
+- start
+docker start rabbitmq
+--------------------------------------------------------------------------------------
+## OR
+## Running RabbitMq
 docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 
 # Database
